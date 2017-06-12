@@ -1,3 +1,25 @@
+// Aplazar JavaScripts
+// Aplaza la carga de jQuery usando la propiedad HTML5 defer
+if (!(is_admin() )) {
+function defer_parsing_of_js ( $url ) {
+if ( FALSE === strpos( $url, '.js' ) ) return $url;
+if ( strpos( $url, 'jquery.js' ) ) return $url;
+// return "$url' defer ";
+return "$url' defer onload='";
+}
+add_filter( 'clean_url', 'defer_parsing_of_js', 11, 1 );
+}
+
+if(!is_admin()) {
+// Mover todo el JS de la cabecera (header) al pié (footer)
+remove_action('wp_head', 'wp_print_scripts');
+remove_action('wp_head', 'wp_print_head_scripts', 9);
+remove_action('wp_head', 'wp_enqueue_scripts', 1);
+add_action('wp_footer', 'wp_print_scripts', 5);
+add_action('wp_footer', 'wp_enqueue_scripts', 5);
+add_action('wp_footer', 'wp_print_head_scripts', 5);
+}
+
 // Deregister los dashicons si no se muestra la barra de admin
 add_action( 'wp_print_styles', function() {
 if (!is_admin_bar_showing()) wp_deregister_style( 'dashicons' );
@@ -25,28 +47,6 @@ add_filter('json_enabled', '__return_false');
 add_filter('json_jsonp_enabled', '__return_false');
 add_filter('rest_enabled', '__return_false');
 add_filter('rest_jsonp_enabled', '__return_false');
-}
-
-// Aplazar JavaScripts
-// Aplaza la carga de jQuery usando la propiedad HTML5 defer
-if (!(is_admin() )) {
-function defer_parsing_of_js ( $url ) {
-if ( FALSE === strpos( $url, '.js' ) ) return $url;
-if ( strpos( $url, 'jquery.js' ) ) return $url;
-// return "$url' defer ";
-return "$url' defer onload='";
-}
-add_filter( 'clean_url', 'defer_parsing_of_js', 11, 1 );
-}
-
-if(!is_admin()) {
-// Mover todo el JS de la cabecera (header) al pié (footer)
-remove_action('wp_head', 'wp_print_scripts');
-remove_action('wp_head', 'wp_print_head_scripts', 9);
-remove_action('wp_head', 'wp_enqueue_scripts', 1);
-add_action('wp_footer', 'wp_print_scripts', 5);
-add_action('wp_footer', 'wp_enqueue_scripts', 5);
-add_action('wp_footer', 'wp_print_head_scripts', 5);
 }
 
 // remove emoji styles and script from header
@@ -102,15 +102,6 @@ return $parts[0];
 add_filter( 'script_loader_src', '_remove_script_version', 15, 1 );
 add_filter( 'style_loader_src', '_remove_script_version', 15, 1 );
 
-//ELIMINAR TRANSIENTS
-add_action( 'wp_scheduled_delete', 'delete_expired_db_transients' );function delete_expired_db_transients() {global $wpdb, $_wp_using_ext_object_cache;if( $_wp_using_ext_object_cache )
-return;$time = isset ( $_SERVER['REQUEST_TIME'] ) ? (int)$_SERVER['REQUEST_TIME'] : time() ;
-$expired = $wpdb->get_col( "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE '_transient_timeout%' AND option_value < {$time};" );foreach( $expired as $transient ) {
-$key = str_replace('_transient_timeout_', '', $transient);
-delete_transient($key);
-}
-}
-
 //Quitar las query strings from statics resources
 function _remove_script_version( $src ){
 $parts = explode( '?ver', $src );
@@ -119,9 +110,20 @@ return $parts[0];
 add_filter( 'script_loader_src', '_remove_script_version', 15, 1 );
 add_filter( 'style_loader_src', '_remove_script_version', 15, 1 );
 
+<?php
 /* Carga eficaz de estilos del tema padre en vez de @import */
 function child_theme_styles() {
 wp_dequeue_style( 'parent-theme-style' );
 wp_enqueue_style( 'child-theme-style', get_stylesheet_uri() );
 }
 add_action( 'wp_enqueue_scripts', 'child_theme_styles' );
+?>
+
+//ELIMINAR TRANSIENTS
+add_action( 'wp_scheduled_delete', 'delete_expired_db_transients' );function delete_expired_db_transients() {global $wpdb, $_wp_using_ext_object_cache;if( $_wp_using_ext_object_cache )
+return;$time = isset ( $_SERVER['REQUEST_TIME'] ) ? (int)$_SERVER['REQUEST_TIME'] : time() ;
+$expired = $wpdb->get_col( "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE '_transient_timeout%' AND option_value < {$time};" );foreach( $expired as $transient ) {
+$key = str_replace('_transient_timeout_', '', $transient);
+delete_transient($key);
+}
+}
