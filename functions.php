@@ -110,14 +110,12 @@ return $parts[0];
 add_filter( 'script_loader_src', '_remove_script_version', 15, 1 );
 add_filter( 'style_loader_src', '_remove_script_version', 15, 1 );
 
-<?php
 /* Carga eficaz de estilos del tema padre en vez de @import */
 function child_theme_styles() {
 wp_dequeue_style( 'parent-theme-style' );
 wp_enqueue_style( 'child-theme-style', get_stylesheet_uri() );
 }
 add_action( 'wp_enqueue_scripts', 'child_theme_styles' );
-?>
 
 //ELIMINAR TRANSIENTS
 add_action( 'wp_scheduled_delete', 'delete_expired_db_transients' );function delete_expired_db_transients() {global $wpdb, $_wp_using_ext_object_cache;if( $_wp_using_ext_object_cache )
