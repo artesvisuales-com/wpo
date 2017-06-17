@@ -59,6 +59,32 @@ remove_filter( 'the_content_feed', 'wp_staticize_emoji' );
 remove_filter( 'comment_text_rss', 'wp_staticize_emoji' );
 }
 
+//Quitar control de versiones de scripts de WP
+function _remove_script_version( $src ){
+$parts = explode( '?', $src );
+return $parts[0];
+}
+add_filter( 'script_loader_src', '_remove_script_version', 15, 1 );
+add_filter( 'style_loader_src', '_remove_script_version', 15, 1 );
+
+//Quitar las query strings from statics resources
+function _remove_script_version( $src ){
+$parts = explode( '?ver', $src );
+return $parts[0];
+}
+add_filter( 'script_loader_src', '_remove_script_version', 15, 1 );
+add_filter( 'style_loader_src', '_remove_script_version', 15, 1 );
+
+//ELIMINAR TRANSIENTS
+add_action( 'wp_scheduled_delete', 'delete_expired_db_transients' );function delete_expired_db_transients() {global $wpdb, $_wp_using_ext_object_cache;if( $_wp_using_ext_object_cache )
+return;$time = isset ( $_SERVER['REQUEST_TIME'] ) ? (int)$_SERVER['REQUEST_TIME'] : time() ;
+$expired = $wpdb->get_col( "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE '_transient_timeout%' AND option_value < {$time};" );foreach( $expired as $transient ) {
+$key = str_replace('_transient_timeout_', '', $transient);
+delete_transient($key);
+}
+}
+  
+// Desactivar script Woocommerce
 add_action( 'wp_enqueue_scripts', 'child_manage_woocommerce_styles', 99 );
 function child_manage_woocommerce_styles() {
 remove_action( 'wp_head', array( $GLOBALS['woocommerce'], 'generator' ) );
@@ -92,36 +118,11 @@ wp_dequeue_script( 'jqueryui' );
 function remove_devicepx() {
 wp_dequeue_script( 'devicepx' );
 }
-add_action( 'wp_enqueue_scripts', 'remove_devicepx' );
-
-//Quitar control de versiones de scripts de WP
-function _remove_script_version( $src ){
-$parts = explode( '?', $src );
-return $parts[0];
-}
-add_filter( 'script_loader_src', '_remove_script_version', 15, 1 );
-add_filter( 'style_loader_src', '_remove_script_version', 15, 1 );
-
-//Quitar las query strings from statics resources
-function _remove_script_version( $src ){
-$parts = explode( '?ver', $src );
-return $parts[0];
-}
-add_filter( 'script_loader_src', '_remove_script_version', 15, 1 );
-add_filter( 'style_loader_src', '_remove_script_version', 15, 1 );
-
+add_action( 'wp_enqueue_scripts', 'remove_devicepx' );  
+  
 /* Carga eficaz de estilos del tema padre en vez de @import */
 function child_theme_styles() {
 wp_dequeue_style( 'parent-theme-style' );
 wp_enqueue_style( 'child-theme-style', get_stylesheet_uri() );
 }
-add_action( 'wp_enqueue_scripts', 'child_theme_styles' );
-
-//ELIMINAR TRANSIENTS
-add_action( 'wp_scheduled_delete', 'delete_expired_db_transients' );function delete_expired_db_transients() {global $wpdb, $_wp_using_ext_object_cache;if( $_wp_using_ext_object_cache )
-return;$time = isset ( $_SERVER['REQUEST_TIME'] ) ? (int)$_SERVER['REQUEST_TIME'] : time() ;
-$expired = $wpdb->get_col( "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE '_transient_timeout%' AND option_value < {$time};" );foreach( $expired as $transient ) {
-$key = str_replace('_transient_timeout_', '', $transient);
-delete_transient($key);
-}
-}
+add_action( 'wp_enqueue_scripts', 'child_theme_styles' );  
