@@ -10,8 +10,8 @@ return "$url' defer onload='";
 add_filter( 'clean_url', 'defer_parsing_of_js', 11, 1 );
 }
 
-if(!is_admin()) {
 // Mover todo el JS de la cabecera (header) al pié (footer)
+if(!is_admin()) {
 remove_action('wp_head', 'wp_print_scripts');
 remove_action('wp_head', 'wp_print_head_scripts', 9);
 remove_action('wp_head', 'wp_enqueue_scripts', 1);
