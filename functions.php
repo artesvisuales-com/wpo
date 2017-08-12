@@ -1,3 +1,5 @@
+<?php
+
 // Aplazar JavaScripts
 // Aplaza la carga de jQuery usando la propiedad HTML5 defer
 if (!(is_admin() )) {
@@ -126,3 +128,5 @@ wp_dequeue_style( 'parent-theme-style' );
 wp_enqueue_style( 'child-theme-style', get_stylesheet_uri() );
 }
 add_action( 'wp_enqueue_scripts', 'child_theme_styles' );  
+
+?>
